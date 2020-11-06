@@ -29772,7 +29772,7 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./cjs/react-dom.development.js');
 }
-},{"./cjs/react-dom.development.js":"node_modules/react-dom/cjs/react-dom.development.js"}],"App.js":[function(require,module,exports) {
+},{"./cjs/react-dom.development.js":"node_modules/react-dom/cjs/react-dom.development.js"}],"useCustomHook.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -29780,11 +29780,72 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _react = _interopRequireWildcard(require("react"));
+var _react = require("react");
 
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+function useCustomHook(startingTime) {
+  // const STARTING_TIME = 5;
+  const [text, setText] = (0, _react.useState)('');
+  const [timeRemaining, setTimeRemaining] = (0, _react.useState)(startingTime);
+  const [isTimeRunning, setIsTimeRunnung] = (0, _react.useState)(false);
+  const [finalResult, setFinalResult] = (0, _react.useState)(0);
+  const textAreaRef = (0, _react.useRef)(null);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+  function handleChange(e) {
+    const {
+      value
+    } = e.target;
+    setText(value);
+  } // console.log("text",text);
+
+
+  function getNumberOfWords(text) {
+    let wordsArr = text.trim().split(' ');
+    console.log(wordsArr.length);
+    return wordsArr.filter(word => word !== "").length;
+  }
+
+  function startGame() {
+    setIsTimeRunnung(true);
+    setTimeRemaining(startingTime);
+    setText('');
+    textAreaRef.current.disabled = false;
+    textAreaRef.current.focus();
+  }
+
+  function endGame() {
+    setIsTimeRunnung(false);
+    setFinalResult(getNumberOfWords(text));
+  }
+
+  (0, _react.useEffect)(() => {
+    if (isTimeRunning && timeRemaining > 0) {
+      setTimeout(() => {
+        setTimeRemaining(prevTimeRemaining => {
+          return prevTimeRemaining - 1;
+        });
+      }, 1000);
+    } else if (timeRemaining === 0) {
+      endGame();
+    }
+  }, [timeRemaining, isTimeRunning]);
+  return [text, timeRemaining, isTimeRunning, finalResult, textAreaRef, handleChange, startGame];
+}
+
+var _default = useCustomHook;
+exports.default = _default;
+},{"react":"node_modules/react/index.js"}],"App.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _useCustomHook = _interopRequireDefault(require("./useCustomHook"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Challenge: build the basic structure of our game
@@ -29841,66 +29902,33 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 * Make the input box focus (DOM elements have a method called .focus()) 
 * immediately when the game starts
 */
+
+/**
+* Challenge:
+* 
+* Move the "business logic" into a custom hook, which will provide
+* any parts of state and any functions to this component to use.
+* 
+* You can easily tell which parts the component needs by looking at 
+* the variables being used inside the `return`ed markup below.
+*/
 function App() {
-  const STARTING_TIME = 5;
-  const [text, setText] = (0, _react.useState)('');
-  const [timeRemaining, setTimeRemaining] = (0, _react.useState)(STARTING_TIME);
-  const [isTimeRunning, setIsTimeRunnung] = (0, _react.useState)(false);
-  const [finalResult, setFinalResult] = (0, _react.useState)(0);
-  const textAreaRef = (0, _react.useRef)(null);
-
-  function handleChange(e) {
-    const {
-      value
-    } = e.target;
-    setText(value);
-  } // console.log("text",text);
-
-
-  function getNumberOfWords(text) {
-    let wordsArr = text.trim().split(' ');
-    console.log(wordsArr.length);
-    return wordsArr.filter(word => word !== "").length;
-  }
-
-  function startGame() {
-    setIsTimeRunnung(true);
-    setTimeRemaining(STARTING_TIME);
-    setText('');
-    textAreaRef.current.disabled = false;
-    textAreaRef.current.focus();
-  }
-
-  function endGame() {
-    setIsTimeRunnung(false);
-    setFinalResult(getNumberOfWords(text));
-  }
-
-  (0, _react.useEffect)(() => {
-    if (isTimeRunning && timeRemaining > 0) {
-      setTimeout(() => {
-        setTimeRemaining(prevTimeRemaining => {
-          return prevTimeRemaining - 1;
-        });
-      }, 1000);
-    } else if (timeRemaining === 0) {
-      endGame();
-    }
-  }, [timeRemaining, isTimeRunning]);
+  const [text, timeRemaining, isTimeRunning, finalResult, textAreaRef, handleChange, startGame] = (0, _useCustomHook.default)(5);
   return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("h1", null, "Speed typing game"), /*#__PURE__*/_react.default.createElement("textarea", {
+    className: timeRemaining <= 2 ? "warning" : '',
     ref: textAreaRef,
     disabled: !isTimeRunning,
     value: text,
     onChange: handleChange
-  }), /*#__PURE__*/_react.default.createElement("h4", null, "Time remaining: ", timeRemaining), /*#__PURE__*/_react.default.createElement("button", {
+  }), /*#__PURE__*/_react.default.createElement("h4", null, "Time remaining: ", timeRemaining, "s"), /*#__PURE__*/_react.default.createElement("button", {
     disabled: isTimeRunning,
     onClick: () => startGame(text)
-  }, "Start"), /*#__PURE__*/_react.default.createElement("h1", null, "Word count: ", finalResult));
+  }, "Start"), /*#__PURE__*/_react.default.createElement("h1", null, "Word count: ", finalResult, " ", finalResult <= 1 ? "word" : "words"));
 }
 
 var _default = App;
 exports.default = _default;
-},{"react":"node_modules/react/index.js"}],"index.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","./useCustomHook":"useCustomHook.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _react = _interopRequireDefault(require("react"));
@@ -29940,7 +29968,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51325" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60009" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -30117,4 +30145,4 @@ function hmrAcceptRun(bundle, id) {
   }
 }
 },{}]},{},["../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","index.js"], null)
-//# sourceMappingURL=/speed-typing-game.e31bb0bc.js.map
+//# sourceMappingURL=/speed-typing-game-costume-hooks.e31bb0bc.js.map

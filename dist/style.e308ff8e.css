@@ -52,6 +52,10 @@ textarea:focus {
 	border: 3px solid blue;
 }
 
+.warning:focus {
+	border: 3px solid red;
+}
+
 button:disabled {
     cursor: not-allowed;
 }

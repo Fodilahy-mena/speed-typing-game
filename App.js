@@ -53,61 +53,37 @@
  * immediately when the game starts
  */
 
-import React, {useEffect, useRef, useState} from 'react'
+ /**
+ * Challenge:
+ * 
+ * Move the "business logic" into a custom hook, which will provide
+ * any parts of state and any functions to this component to use.
+ * 
+ * You can easily tell which parts the component needs by looking at 
+ * the variables being used inside the `return`ed markup below.
+ */
 
+import React from 'react'
+import useCustomHook from './useCustomHook'
 function App() {
-    const STARTING_TIME = 5;
-    const [text, setText] = useState('')
-    const [timeRemaining, setTimeRemaining] = useState(STARTING_TIME)
-    const [isTimeRunning, setIsTimeRunnung] = useState(false)
-    const [finalResult, setFinalResult] = useState(0)
-    const textAreaRef = useRef(null);
-    
-    
-    function handleChange(e) {
-        const {value} = e.target
-        setText(value)
-    }
-    // console.log("text",text);
-    function getNumberOfWords(text) {
-        let wordsArr = text.trim().split(' ');
-        console.log(wordsArr.length)
-        return wordsArr.filter(word => word !== "").length;
-    }
 
-    function startGame() {
-        setIsTimeRunnung(true)
-        setTimeRemaining(STARTING_TIME)
-        setText('')
-        textAreaRef.current.disabled = false
-        textAreaRef.current.focus();
-    }
-    function endGame() {
-        setIsTimeRunnung(false)
-        setFinalResult(getNumberOfWords(text))
-    }
-    useEffect(() => {
-        
-        if(isTimeRunning && timeRemaining > 0) {
-            setTimeout(() => {
-                setTimeRemaining(prevTimeRemaining => {
-                    return prevTimeRemaining - 1
-                });
-            }, 1000);
-        } else if(timeRemaining === 0) {
-            endGame()
-        }
-        
-    }, [timeRemaining, isTimeRunning])
+    const [text, 
+            timeRemaining,
+            isTimeRunning,
+            finalResult,
+            textAreaRef,
+            handleChange,
+            startGame] = useCustomHook(5);
+
     
     return (
         <>
         <h1>Speed typing game</h1>
-        <textarea ref={textAreaRef} disabled={!isTimeRunning } value={text} onChange={handleChange}/>
-        <h4>Time remaining: {timeRemaining}</h4>
+        <textarea className={timeRemaining <= 2 ? "warning" : ''} ref={textAreaRef} disabled={!isTimeRunning } value={text} onChange={handleChange}/>
+        <h4>Time remaining: {timeRemaining}s</h4>
         {/* <button onClick={() => getNumberOfWords(text)}>Start</button> */}
         <button disabled={isTimeRunning} onClick={() => startGame(text)}>Start</button>
-        <h1>Word count: {finalResult}</h1>
+        <h1>Word count: {finalResult} {finalResult <= 1 ? "word" : "words"}</h1>
         </>
     )
 }
